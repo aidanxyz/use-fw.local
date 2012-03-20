@@ -1,0 +1,20 @@
+<?php
+	class fooController
+	{
+		public function actionBar()
+		{
+			gate::out("specific_inline.php");
+			echo "Hello, I am method ".__FUNCTION__." of class ".__CLASS__."<br>";
+			out::writeTo("specific", "content", array('name' => 'val'));
+			/*$s = "some text";
+			out::writeTo("content", "some direct text");*/
+		}
+		
+		public function actionNum()
+		{
+			echo "3333";
+		}
+		
+		public $defaultAction = "Num";
+	}
+?>

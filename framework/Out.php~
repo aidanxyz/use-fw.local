@@ -1,0 +1,46 @@
+<?php
+	//TODO: pack "Controller" in config file
+	class Out
+	{
+		private static $_defaultViewPath = "views/default.php";
+		
+		public static function writeTo($view_name, $label)
+		{
+			self::checkView($view_name);
+			self::checkLabel($label);
+			
+			self::$_loaderLabels[$label] = "views/".Url::getObjectName()."/".$view_name.".php";
+		}
+		
+		public static function checkView($view_name)
+		{
+			$object_name = Url::getObjectName();
+			$view_path = "views/".$object_name."/".$view_name.".php";
+			
+			if(!file_exists($view_path))
+				trigger_error("Could not find view file: ".$view_path);
+			
+			//return true;
+		}
+		
+		private static $_loaderLabels = array("content"=>"views/default.php");
+		
+		public static function checkLabel($label)
+		{
+			if(!array_key_exists($label, self::$_loaderLabels))
+				trigger_error("Label ".$label." is not defined");
+		}
+		
+		public static function loaderLabel($label)
+		{
+			self::checkLabel($label);
+			require_once(self::$_loaderLabels[$label]);
+		}
+		
+		private static $_layout = "views/layout.php";
+		public static function render()
+		{
+			require_once(self::$_layout);
+		}
+	}
+?>

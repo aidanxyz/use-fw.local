@@ -1,0 +1,12 @@
+<?php
+	class itemController
+	{
+		public function actionCreate()
+		{
+			if(isset($_POST['item']))
+			{
+				
+			}
+		}
+	}
+?>

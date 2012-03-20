@@ -1,0 +1,116 @@
+<?php
+	class auth
+	{
+		protected static $instance;
+		
+		private function __construct() {}
+		private function __clone() {}
+		private function __wakeup() {}
+		
+		public static function getInstance()
+		{
+			if(is_null(self::$instance))
+			{
+				self::$instance = new auth;
+			}
+			return self::$instance;
+		}
+		
+		const consistent_salt = "places";
+		const cookie_expire = 60;
+		const cookie_path = "/";
+		
+		private function auth(){
+			session_start();
+		}
+		
+		#returns: 0 - on success, non-zero value on error
+		public signIn($username, $password, $remembered = false)
+		{
+			$real_pw = $this->getPassword($username);
+			if(!$real_pw)
+				#no such username
+				return 2;
+			
+			if($real_pw !== sha1($password))
+				#wrong password
+				return 1;
+			
+			#successfuly authenticated
+			$_SESSION['username'] = $username;
+			#session hijacking
+			$_SESSION['useragent'] = md5($_SERVER['HTTP_USER_AGENT'].self::consistent_salt);
+			#session fixation
+			session_regenerate_id();
+			
+			if($remembered)
+			{
+				#generating new hash
+				$uniqueid = $this->generateHash();
+				#saving new hash in db along with username
+				$this->saveUniqueId($username, $uniqueid);
+				#setting the cookies
+				setcookie("username", $username, time() + self::cookie_expire, self::cookie_path);
+				setcookie("uniqueid", $uniqueid, time() + self::cookie_expire, self::cookie_path);
+			}
+		}
+		
+		#returns: bool
+		public signedIn()
+		{
+			#first check the cookies
+			if(isset($_COOKIE['username'] && isset($_COOKIE['uniqueid']))
+			{
+				if(getUniqueId($_COOKIE['username']) == $_COOKIE['uniqueid'])
+				{
+					$_SESSION['username'] = $_COOKIE['username'];
+				}
+			}
+			#check sessions
+			if(isset($_SESSION['username']) and $_SESSION['useragent'] == md5($_SERVER['HTTP_USER_AGENT'].self::consistent_salt))
+			{
+				/* todo:refresh the uniqueids */
+				return true;
+			}
+			return false;
+		}
+		
+		#returns: void
+		public signOut()
+		{
+			#first unset cookies if they exist
+			if(isset($_COOKIE['username'] && isset($_COOKIE['uniqueid']))
+			{
+				setcookie("username", $username, time() - self::cookie_expire, self::cookie_path);
+				setcookie("uniqueid", $uniqueid, time() - self::cookie_expire, self::cookie_path);
+			}
+			#unset session
+			session_destroy();
+		}
+		
+		#returns: password for given username, or NULL/0 otherwise
+		private function getPassword($username)
+		{
+			dbmysqli::getInstance()->prepare("select password from users where");
+		}
+		
+		#returns: bool
+		private function saveUniqueId($username, $uniqueid)
+		{
+			/* --- */
+		}
+		
+		#returns: uniqueid for given username, or NULL/0 otherwise
+		private function getUniqueId($username)
+		{
+			/* --- */
+		}
+		
+		#returns: generated random hash of given length
+		private function generateHash($length = 36)
+		{
+			# *true - more entropy
+			return substr(md5(uniqid(rand(1, 1000), true)), 0, $length);
+		}
+	}
+?>

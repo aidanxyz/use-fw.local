@@ -1,0 +1,75 @@
+<?php
+	class authorization
+	{
+		private static $_accessRulesVarName = "accessRules";
+		
+		public function isAllowed($model_name, $action_name)
+		{
+			return self::authorize($model_name, $action_name);
+		}
+		
+		private static function authorize($model_name, $action_name)
+		{
+			$is_allowed = true;
+			
+			$rules = self::getAccessRules($model_name, $action_name);
+			if(is_string($rules))
+			{
+				if(self::checkRule($model_name, $rules) !== true) {
+					self::handleAccessError($result);
+					$is_allowed = false;
+				}
+			}
+			else if(is_array($rules))
+			{
+				foreach($rules as $rule)
+				{
+					if(self::checkRule($model_name, $rule) !== true) {
+						self::handleAccessError($result);
+						$is_allowed = false;
+					}
+				}
+			}
+			
+			return $is_allowed;
+		}
+		
+		private static function getAccessRules($model_name, $action_name)
+		{
+			if(class_exists($model_name))
+			{
+				if(property_exists($model_name, self::$_accessRulesVarName))
+				{
+					$model_instance = new $model_name;
+					$access_var = self::$_accessRulesVarName;
+					$access_rules = $model_instance->$access_var;
+					
+					if(isset($access_rules[$action_name]))
+						return $model_instance->$this->_accessRulesVarName[$action_name];
+				}
+				else 
+					return false;
+			}
+			else
+				trigger_error("Undefined model: ".$model_name);
+		}
+		
+		private static function checkRule($model_name, $rule)
+		{
+			if(method_exists("authorization", $rule)) {
+				return self::$rule();
+			}
+			else if(method_exists($model_name, $rule)) {
+				$model_instance = new $model_name;
+				return $model_instance->$rule();
+			}
+			else
+				trigger_error("rule not found");
+		}
+		
+		private static function handleAccessError($error)
+		{
+			return;
+		}
+	}
+?>

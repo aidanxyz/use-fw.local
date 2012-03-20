@@ -1,0 +1,58 @@
+<?php
+	class Sys
+	{
+		public static function start()
+		{
+			self::loadSystemClasses();
+			self::startHandlingErrors();
+			Url::processUrl();
+			Out::render();
+		}
+		
+		private static $_systemClasses = array("Out", "Url");
+		
+		private function loadSystemClasses()
+		{
+			ob_start();
+				foreach(self::$_systemClasses as $class_name)
+					require_once("framework/".$class_name.".php");
+			ob_end_clean();
+		}
+		
+		private function startHandlingErrors()
+		{
+			set_error_handler(array("self", "customErrorHandler"));
+		}
+		
+		private function customErrorHandler($errno, $errstr)
+		{
+			echo "Error[".$errno."]: ".$errstr."<br>";
+			die();
+		}
+		
+		private static $_directoriesToLook = array("models/", "controllers/");
+		
+		public static function newInstance($class_name)
+		{
+			if(class_exists($class_name))
+				return new $class_name;
+			
+			foreach(self::$_directoriesToLook as $directory)
+				if(self::isClassIn($directory, $class_name))
+				{
+					ob_start();
+						require_once($directory.$class_name.".php");
+					ob_end_clean();
+					return new $class_name;
+				}
+			
+			trigger_error("Requested class is not found");
+		}
+		
+		private function isClassIn($path, $class_name)
+		{
+			$files = scandir($path);
+			return in_array($class_name.".php", $files);
+		}
+	}
+?>

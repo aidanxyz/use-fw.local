@@ -1,0 +1,21 @@
+<?php
+	class UserModel
+	{
+		public $firstName;
+		public $lastName;
+		
+		public $email;
+		public $password;
+		
+		public $accountId;
+		
+		public $validationRules = array(
+			"firstName" => "str",
+			"lastName" => "str",
+			"email" => array("req", "email"),
+			"password" => array("req"),
+			
+			"password2" => array("req", "repeat" => array("password"))
+		);
+	}
+?>
