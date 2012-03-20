@@ -34,7 +34,7 @@
 		
 		private $_max_args = 5;
 		
-		private $_indexUrl = "http://auca-connect.local/index.php";
+		private $_indexUrl = "http://use-fw.local/index.php";
 		/* -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- */
 		
 		private $_objectName;
