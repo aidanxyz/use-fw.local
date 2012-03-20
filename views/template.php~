@@ -1,3 +1,0 @@
-<body>
-	<h1> This is body </h1>
-	<?php echo $content;?>
